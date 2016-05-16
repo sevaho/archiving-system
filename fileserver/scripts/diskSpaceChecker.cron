@@ -1,0 +1,22 @@
+#!/bin/sh
+#cron each week
+df -H "/" | awk '{ print $5 " " $1 }' | grep "/" | while read output;
+do
+  echo $output
+  usep=`df -H "/" | awk '{ print $5 " " $1 }' | grep "/" | cut -d " " -f1 | tr -d "%"`
+  partition=$(echo $output | awk '{ print $2 }' )
+  if [ $usep -ge 90 ]; then
+    echo "Running out of space check $partition \ $output"
+#    echo "Running out of space \"$partition ($usep%)\" on $(hostname) as on $(date)" |
+#    mail -s "Alert: Almost out of disk space $usep%" you@somewhere.com
+elif [ $usep -ge 95 ]
+then
+while [ $usep -ge 95 ]
+do
+filetoremove=`find /home/vagrant/files -type f -printf '%T+ %p\n' | sort | head -n 1 | cut -d " " -f2`
+rm -rf $filetoremove
+usep=`df -H "/" | awk '{ print $5 " " $1 }' | grep "/" | cut -d " " -f1 | tr -d "%"`
+done
+
+fi
+done
